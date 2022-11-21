@@ -1,0 +1,10 @@
+/.idea/
+/.ipynb_checkpoints/
+/.virtual_documents/
+/__pycache__/
+/checkpoint/
+/data/.ipynb_checkpoints/
+/data/preprocessed_data/
+/data/raw_data/
+/models/__pycache__/
+/utils/__pycache__/
