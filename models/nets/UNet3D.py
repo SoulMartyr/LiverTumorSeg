@@ -58,7 +58,7 @@ class DownConv(nn.Module):
 
 
 class UNet3D(nn.Module):
-    def __init__(self, in_channels: int = 1, out_channels: int = 1):
+    def __init__(self, in_channels: int = 1, out_channels: int = 3):
         super(UNet3D, self).__init__()
 
         self.stage1 = DoubleConv(in_channels, 64)
@@ -72,8 +72,6 @@ class UNet3D(nn.Module):
 
         self.projection = nn.Conv3d(64, out_channels, kernel_size=1)
 
-        self.normalize = nn.Sigmoid()
-
     def forward(self, x):
         x1 = self.stage1(x)
         x2 = self.stage2(x1)
@@ -85,7 +83,6 @@ class UNet3D(nn.Module):
         x7 = self.stage7(x6, x1)
 
         out = self.projection(x7)
-        out = self.normalize(out)
         return out
 
 

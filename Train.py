@@ -18,8 +18,11 @@ def test(test_loader, model):
         seg = batch['seg'].cuda()
         with torch.no_grad():
             out = model(ct)
-            valid_loss = tversky_loss(out, seg)
-            valid_dice = 1 - dice_loss(out, seg)
+            valid_loss = weighted_cross_entropy_loss(out, seg)
+            if out.shape[1] == 2:
+                valid_dice = liver_dice(out, seg)
+            else:
+                valid_dice = tumor_dice(out, seg)
         valid_tot_loss += valid_loss.item()
         valid_tot_dice += valid_dice.item()
 
@@ -42,7 +45,7 @@ def train(start_epoch, start_iteration, train_loader, test_loader, model, is_amp
           save_epoch, weight_dir, log_iteration):
     log_msg_head(epoch_num, batch_size)
 
-    best_dice = torch.FloatTensor(0)
+    best_dice = 0.
 
     epoch = start_epoch
     iteration = start_iteration
@@ -75,15 +78,18 @@ def train(start_epoch, start_iteration, train_loader, test_loader, model, is_amp
 
             with amp.autocast():
                 out = model(ct)
-                train_loss = tversky_loss(out, seg)
-                train_dice = 1 - dice_loss(out, seg)
+                train_loss = weighted_cross_entropy_loss(out, seg)
+                if out.shape[1] == 2:
+                    train_dice = liver_dice(out, seg)
+                else:
+                    train_dice = tumor_dice(out, seg)
                 train_accuracy = [train_loss.item(), train_dice.item()]
 
             grad_scaler.scale(train_loss).backward()
             grad_scaler.step(optimizer)
             grad_scaler.update()
 
-            if iteration % log_iteration == 0 and iteration != start_iteration:
+            if iteration % log_iteration == 0 and (iteration == 0 or iteration != start_iteration):
                 lr = get_learning_rate(optimizer)
                 log_msg(epoch, iteration, lr, train_accuracy, test_accuracy, is_save)
 
@@ -177,5 +183,6 @@ if __name__ == "__main__":
     log_hint("Load Model And Optimizer Success")
 
     # Start Train
-    train(start_epoch, start_iteration, train_loader, test_loader, model, is_amp, optimizer, grad_scaler,
-          save_epoch, weight_dir, log_iteration)
+    best_dice = train(start_epoch, start_iteration, train_loader, test_loader, model, is_amp, optimizer, grad_scaler,
+                      save_epoch, weight_dir, log_iteration)
+    log_hint("Best Dice: {}".format(str(best_dice)))

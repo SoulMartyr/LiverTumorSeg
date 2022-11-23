@@ -55,23 +55,24 @@ class TiLSDataSet(Dataset):
 
         ct_array = sitk.GetArrayFromImage(ct)
         seg_array = sitk.GetArrayFromImage(seg)
-        ct_array = np.expand_dims(ct_array, axis=0)
-        seg_array = np.expand_dims(seg_array, axis=0)
 
+        ct_array = np.expand_dims(ct_array, axis=0)
         ct_array = normalize_array(ct_array)
 
-        assert self.num_classes == 1 or self.num_classes == 2, "Num Classes should be 1 or 2"
+        assert self.num_classes == 2 or self.num_classes == 3, "Num Classes should be 2 or 3"
 
-        if self.num_classes == 1:
-            seg_array[seg_array > 0] = 1
+        multi_seg_array = np.zeros_like(seg_array)
+        multi_seg_array = np.expand_dims(multi_seg_array, axis=0).repeat(self.num_classes, axis=0)
+
+        multi_seg_array[0, seg_array == 0] = 1
+        multi_seg_array[1, seg_array == 1] = 1
+        if self.num_classes == 2:
+            multi_seg_array[1, seg_array == 2] = 1
         else:
-            seg_array = seg_array.repeat(2, axis=0)
-            seg_array[0, seg_array[0] == 2] = 1
-            seg_array[1, seg_array[1] == 1] = 0
-            seg_array[1, seg_array[1] == 2] = 1
+            multi_seg_array[2, seg_array == 2] = 1
 
         ct_tensor = torch.FloatTensor(ct_array)
-        seg_tensor = torch.LongTensor(seg_array)
+        seg_tensor = torch.LongTensor(multi_seg_array)
 
         ct_tensor = random_crop(ct_tensor, self.crop_slices)
         seg_tensor = random_crop(seg_tensor, self.crop_slices)
@@ -85,7 +86,7 @@ if __name__ == "__main__":
     train_index = index_df.loc["train", "index"].strip().split(" ")
 
     train_dataset = TiLSDataSet(data_path="../data/preprocessed_data/train", index_list=train_index, crop_slices=2,
-                                num_classes=2)
+                                num_classes=3)
 
     dataloader = DataLoader(train_dataset, batch_size=2, shuffle=True)
     print("len", len(dataloader))
@@ -93,5 +94,3 @@ if __name__ == "__main__":
     info = next(iter(dataloader))
     print(info['ct'].shape, info['seg'].shape)
     print(info['ct'][0].min(), info['ct'][0].max())
-    a = [[1, 2], [3, 4]]
-    print(a[0:1, :])

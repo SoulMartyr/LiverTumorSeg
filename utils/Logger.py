@@ -29,10 +29,10 @@ def log_msg(epoch: int, iteration: int, lr: float, train_accuracy: float, valid_
     print("| {:<8}   {:<6}   {:<4}   {:<6} | {:<6}   {:<6} | {:<6}   {:<6} |".format(get_time(), str(epoch)[:6],
                                                                                      (str(iteration) + sign)[:4],
                                                                                      str(lr)[:6],
-                                                                                     str(train_accuracy[0])[:6],
-                                                                                     str(train_accuracy[1])[:6],
-                                                                                     str(valid_accuracy[0])[:6],
-                                                                                     str(valid_accuracy[1])[:6]))
+                                                                                     str(eval(train_accuracy[0]))[:6],
+                                                                                     str(eval(train_accuracy[1]))[:6],
+                                                                                     str(eval(valid_accuracy[0]))[:6],
+                                                                                     str(eval(valid_accuracy[1]))[:6]))
 
 
 def log_flush():
