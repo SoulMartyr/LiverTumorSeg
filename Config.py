@@ -8,10 +8,11 @@ parser.add_argument('--test_data_path', default='./data/preprocessed_data/test',
 parser.add_argument('--index_path', default="./data/index.csv", help='index file path')
 
 # train
-parser.add_argument('--gpu', action='store_true', help='whether use gpu ')
-parser.add_argument('--amp', action='store_true', help='whether use automatic mixed precision ')
+parser.add_argument('--gpu', action='store_true', help='whether use gpu')
+parser.add_argument('--amp', action='store_true', help='whether use automatic mixed precision')
+parser.add_argument('--model', default="unet3d", help='option:unet3d')
 parser.add_argument('--num_classes', type=int, default=3, help='2:only segment liver 3:both segment liver and tumor')
-parser.add_argument('--batch_size', type=int, default=2, help='train batch size')
+parser.add_argument('--batch_size', type=int, default=1, help='train batch size')
 parser.add_argument('--epoch_num', type=int, default=100, metavar='N', help='number of epochs to train (default: 200)')
 parser.add_argument('--lr', type=float, default=0.0001, metavar='LR', help='learning rate (default: 0.0001)')
 parser.add_argument('--num_workers', default=8, type=int, help='dataloader num workers (default: 8)')

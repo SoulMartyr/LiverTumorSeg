@@ -2,7 +2,7 @@ from torch import optim
 from torch.cuda import amp
 
 import Config
-from models.TestModel import TestAmpModel
+from models.TestModel import AmpTestModel
 from utils.DataFunc import *
 from utils.Logger import *
 from utils.LossFunc import *
@@ -42,8 +42,8 @@ def save_weight(weight_dir, epoch, iteration, model_state_dict, optim_state_dict
 
 
 def train(start_epoch, start_iteration, train_loader, test_loader, model, is_amp, optimizer, grad_scaler,
-          save_epoch, weight_dir, log_iteration):
-    log_msg_head(epoch_num, batch_size)
+          save_epoch, weight_dir, log_iteration, log_file):
+    log_msg_head(epoch_num, batch_size, log_file)
 
     best_dice = 0.
 
@@ -91,16 +91,16 @@ def train(start_epoch, start_iteration, train_loader, test_loader, model, is_amp
 
             if iteration % log_iteration == 0 and (iteration == 0 or iteration != start_iteration):
                 lr = get_learning_rate(optimizer)
-                log_msg(epoch, iteration, lr, train_accuracy, test_accuracy, is_save)
+                log_msg(epoch, iteration, lr, train_accuracy, test_accuracy, is_save, log_file)
 
             iteration += 1
 
         epoch += 1
-        log_flush()
     return best_dice
 
 
 if __name__ == "__main__":
+
     args = Config.args
 
     # device = torch.device('cuda' if args.gpu else 'cpu')
@@ -113,6 +113,11 @@ if __name__ == "__main__":
     train_crop_slices = args.train_crop_size
     test_crop_slices = args.test_crop_size
     num_classes = args.num_classes
+
+    model_name = args.model
+
+    model = AmpTestModel(out_channels=num_classes)
+    log_file = set_logfile(AmpTestModel.__name__)
 
     batch_size = args.batch_size
     num_workers = args.num_workers
@@ -149,11 +154,11 @@ if __name__ == "__main__":
         pin_memory=True
     )
 
-    log_hint("Load DataSet Success")
+    log_hint("Load DataSet Success", log_file)
 
     # Load Model
     grad_scaler = amp.GradScaler()
-    model = TestAmpModel(out_channels=num_classes).cuda()
+    model = AmpTestModel(out_channels=num_classes).cuda()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
     checkpoint_path = args.checkpoint_path
@@ -180,9 +185,9 @@ if __name__ == "__main__":
     else:
         start_iteration = 0
         start_epoch = 0
-    log_hint("Load Model And Optimizer Success")
+    log_hint("Load Model And Optimizer Success", log_file)
 
     # Start Train
     best_dice = train(start_epoch, start_iteration, train_loader, test_loader, model, is_amp, optimizer, grad_scaler,
-                      save_epoch, weight_dir, log_iteration)
-    log_hint("Best Dice: {}".format(str(best_dice)))
+                      save_epoch, weight_dir, log_iteration, log_file)
+    log_hint("Best Dice: {}".format(str(best_dice)), log_file)
