@@ -38,30 +38,37 @@ def log_msg_head(epoch_num: int, batch_size: int, file):
     print('-------------------------------------------------------------------------')
 
 
-def log_msg(epoch: int, iteration: int, lr: float, train_accuracy: float, valid_accuracy: float, is_save: bool, file):
+def log_msg(epoch: int, iteration: int, lr: float, train_accuracy: list, valid_accuracy: list, is_save: bool, file):
     fp = open(file, "w")
     if is_save:
         sign = '*'
     else:
         sign = ' '
+
+    if train_accuracy[1] < 0.0001:
+        train_accuracy[1] = 0.
+    if valid_accuracy[1] and valid_accuracy[1] < 0.0001:
+        valid_accuracy[1] = 0.
+
     train_accuracy = ['None' if elem is None else str(elem) for elem in train_accuracy]
     valid_accuracy = ['None' if elem is None else str(elem) for elem in valid_accuracy]
+
     print("| {:<8}   {:<6}   {:<4}   {:<6} | {:<6}   {:<6} | {:<6}   {:<6} |".format(get_time(), str(epoch)[:6],
                                                                                      (str(iteration) + sign)[:4],
                                                                                      str(lr)[:6],
-                                                                                     str(eval(train_accuracy[0]))[:6],
-                                                                                     str(eval(train_accuracy[1]))[:6],
-                                                                                     str(eval(valid_accuracy[0]))[:6],
-                                                                                     str(eval(valid_accuracy[1]))[:6]),
+                                                                                     str(train_accuracy[0])[:6],
+                                                                                     str(train_accuracy[1])[:6],
+                                                                                     str(valid_accuracy[0])[:6],
+                                                                                     str(valid_accuracy[1])[:6]),
           file=fp)
     fp.close()
     print("| {:<8}   {:<6}   {:<4}   {:<6} | {:<6}   {:<6} | {:<6}   {:<6} |".format(get_time(), str(epoch)[:6],
                                                                                      (str(iteration) + sign)[:4],
                                                                                      str(lr)[:6],
-                                                                                     str(eval(train_accuracy[0]))[:6],
-                                                                                     str(eval(train_accuracy[1]))[:6],
-                                                                                     str(eval(valid_accuracy[0]))[:6],
-                                                                                     str(eval(valid_accuracy[1]))[:6]))
+                                                                                     str(train_accuracy[0])[:6],
+                                                                                     str(train_accuracy[1])[:6],
+                                                                                     str(valid_accuracy[0])[:6],
+                                                                                     str(valid_accuracy[1])[:6]))
 
 
 def log_epoch(iteration: int, batch_loss: float, batch_dist: float, file):

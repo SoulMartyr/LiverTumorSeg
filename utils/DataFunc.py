@@ -59,7 +59,7 @@ class TiLSDataSet(Dataset):
         seg_array = sitk.GetArrayFromImage(seg)
 
         ct_array = np.expand_dims(ct_array, axis=0)
-        print(np.max(ct_array), np.min(ct_array))
+
         if self.normalize:
             ct_array = normalize_array(ct_array)
 
