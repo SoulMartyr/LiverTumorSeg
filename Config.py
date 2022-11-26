@@ -18,13 +18,13 @@ parser.add_argument('--epoch_num', type=int, default=100, metavar='N', help='num
 parser.add_argument('--lr', type=float, default=0.0001, metavar='LR', help='learning rate (default: 0.0001)')
 parser.add_argument('--num_workers', default=8, type=int, help='dataloader num workers (default: 8)')
 parser.add_argument('--train_crop_size', type=int, default=16, help='crop size for 3D data in training(default: 16)')
-parser.add_argument('--save_epoch', type=int, default=2,
-                    help='validate and save model epoch interval(default: 2)')
+parser.add_argument('--save_epoch', type=int, default=10,
+                    help='save model epoch interval(default: 10)')
+parser.add_argument('--valid_epoch', type=int, default=2, help='validate epoch interval(default: 2)')
 parser.add_argument('--log_iteration', type=int, default=10, help='log information iteration interval(default: 10)')
-parser.add_argument('--checkpoint_path',  default='./checkpoint', help="checkpoint path for intermediate weight")
+parser.add_argument('--checkpoint_path', default='./checkpoint', help="checkpoint path for intermediate weight")
 
 # test
 parser.add_argument('--test_crop_size', type=int, default=16, help='crop size for 3D data in testing(default: 16)')
-
 
 args = parser.parse_args()

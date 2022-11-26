@@ -7,6 +7,8 @@ def set_logfile(file_name: str):
     if not os.path.exists(file_dir):
         os.makedirs(file_dir)
     file = os.path.join(file_dir, file_name + ".txt")
+    with open(file, 'w') as f:
+        f.truncate(0)
     return file
 
 

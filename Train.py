@@ -43,7 +43,7 @@ def save_weight(weight_dir, epoch, iteration, model_state_dict, optim_state_dict
 
 
 def train(start_epoch, start_iteration, train_loader, test_loader, model, is_amp, optimizer, grad_scaler,
-          save_epoch, weight_dir, log_iteration, log_file):
+          valid_epoch, save_epoch, weight_dir, log_iteration, log_file):
     log_msg_head(epoch_num, batch_size, log_file)
 
     best_dice = 0.
@@ -61,10 +61,10 @@ def train(start_epoch, start_iteration, train_loader, test_loader, model, is_amp
                 torch.cuda.empty_cache()
 
             is_save = False
-            if not is_epoch_saved and epoch % save_epoch == 0 and epoch != start_epoch:
+            if epoch % valid_epoch == 0 and epoch != start_epoch:
                 test_accuracy = test(test_loader, model)
                 model.train()
-                if test_accuracy[1] > best_dice:
+                if not is_epoch_saved and epoch % save_epoch == 0:
                     save_weight(weight_dir, epoch, iteration, model.state_dict(), optimizer.state_dict(), is_amp,
                                 grad_scaler.state_dict())
                     best_dice = test_accuracy[1]
@@ -130,6 +130,7 @@ if __name__ == "__main__":
     learning_rate = args.lr
     epoch_num = args.epoch_num
     save_epoch = args.save_epoch
+    valid_epoch = args.valid_epoch
     log_iteration = args.log_iteration
 
     # Load Data
@@ -165,7 +166,7 @@ if __name__ == "__main__":
     # Load Model
     grad_scaler = amp.GradScaler()
     model = model.cuda()
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate, eps=1e-3)
 
     checkpoint_path = args.checkpoint_path
     weight_dir = os.path.join(checkpoint_path, '{}'.format(model.__class__.__name__))
@@ -195,5 +196,5 @@ if __name__ == "__main__":
 
     # Start Train
     best_dice = train(start_epoch, start_iteration, train_loader, test_loader, model, is_amp, optimizer, grad_scaler,
-                      save_epoch, weight_dir, log_iteration, log_file)
+                      valid_epoch, save_epoch, weight_dir, log_iteration, log_file)
     log_hint("Best Dice: {}".format(str(best_dice)), log_file)
