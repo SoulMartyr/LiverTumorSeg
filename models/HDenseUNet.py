@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 
-from nets.DenseUNet2D import DenseUNet2D
-from nets.DenseUNet3D import DenseUNet3D
+from .nets.DenseUNet2D import DenseUNet2D
+from .nets.DenseUNet3D import DenseUNet3D
 
 
 class HDenseUNet(nn.Module):
@@ -52,7 +52,7 @@ class HDenseUNet(nn.Module):
 
         final = feature3d + fea2d
         final_conv = self.conv(final)
-        final_conv = self.dropout(final_conv)
+        # final_conv = self.dropout(final_conv)
         final_bn = self.bn(final_conv)
         final_relu = self.relu(final_bn)
 

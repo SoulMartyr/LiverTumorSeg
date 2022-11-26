@@ -57,9 +57,9 @@ class DownConv(nn.Module):
         return out
 
 
-class UNet3D(nn.Module):
+class UNet_3D(nn.Module):
     def __init__(self, in_channels: int = 1, out_channels: int = 3):
-        super(UNet3D, self).__init__()
+        super(UNet_3D, self).__init__()
 
         self.stage1 = DoubleConv(in_channels, 64)
         self.stage2 = DownConv(64, 128)
@@ -88,5 +88,5 @@ class UNet3D(nn.Module):
 
 if __name__ == "__main__":
     a = torch.ones((1, 1, 8, 256, 256))
-    b = UNet3D(1, 2)
+    b = UNet_3D(1, 2)
     print(b(a).shape)
