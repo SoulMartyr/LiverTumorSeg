@@ -3,7 +3,9 @@ import time
 
 
 def set_logfile(file_name: str):
-    file_dir = "./log"
+    file_dir = "./logs"
+    if not os.path.exists(file_dir):
+        os.makedirs(file_dir)
     file = os.path.join(file_dir, file_name + ".txt")
     return file
 

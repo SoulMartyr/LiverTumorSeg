@@ -2,7 +2,8 @@ from torch import optim
 from torch.cuda import amp
 
 import Config
-from models.TestModel import AmpTestModel
+from models.HDenseUNet import AmpHDenseUNet
+from models.UNet3D import AmpUNet3D
 from utils.DataFunc import *
 from utils.Logger import *
 from utils.LossFunc import *
@@ -115,9 +116,14 @@ if __name__ == "__main__":
     num_classes = args.num_classes
 
     model_name = args.model
-
-    model = AmpTestModel(out_channels=num_classes)
-    log_file = set_logfile(AmpTestModel.__name__)
+    if model_name == "unet3d":
+        model = AmpUNet3D(out_channels=num_classes)
+        log_file = set_logfile(AmpUNet3D.__name__)
+    elif model_name == "hdenseunet":
+        model = AmpHDenseUNet(num_slices=train_crop_slices, out_channels=num_classes)
+        log_file = set_logfile(AmpHDenseUNet.__name__)
+    else:
+        raise NameError("No model named" + model_name)
 
     batch_size = args.batch_size
     num_workers = args.num_workers
@@ -135,9 +141,9 @@ if __name__ == "__main__":
     test_data_path = args.test_data_path
 
     train_dataset = TiLSDataSet(data_path=train_data_path, index_list=train_index,
-                                crop_slices=train_crop_slices, num_classes=num_classes)
+                                crop_slices=train_crop_slices, num_classes=num_classes, is_normalize=False)
     test_dataset = TiLSDataSet(data_path=test_data_path, index_list=test_index,
-                               crop_slices=test_crop_slices, num_classes=num_classes)
+                               crop_slices=test_crop_slices, num_classes=num_classes, is_normalize=False)
 
     train_loader = DataLoader(
         dataset=train_dataset,
@@ -158,7 +164,7 @@ if __name__ == "__main__":
 
     # Load Model
     grad_scaler = amp.GradScaler()
-    model = AmpTestModel(out_channels=num_classes).cuda()
+    model = model.cuda()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
     checkpoint_path = args.checkpoint_path

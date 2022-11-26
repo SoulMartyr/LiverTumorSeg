@@ -39,12 +39,14 @@ def normalize_tensor(tensor):
 
 
 class TiLSDataSet(Dataset):
-    def __init__(self, data_path: str, index_list: list, crop_slices: int = 48, num_classes: int = 2):
+    def __init__(self, data_path: str, index_list: list, crop_slices: int = 48, num_classes: int = 2,
+                 is_normalize: bool = False):
         super(TiLSDataSet, self).__init__()
         self.data_path = data_path
         self.index_list = index_list
         self.crop_slices = crop_slices
         self.num_classes = num_classes
+        self.normalize = is_normalize
 
     def __len__(self):
         return len(self.index_list)
@@ -57,7 +59,9 @@ class TiLSDataSet(Dataset):
         seg_array = sitk.GetArrayFromImage(seg)
 
         ct_array = np.expand_dims(ct_array, axis=0)
-        ct_array = normalize_array(ct_array)
+        print(np.max(ct_array), np.min(ct_array))
+        if self.normalize:
+            ct_array = normalize_array(ct_array)
 
         assert self.num_classes == 2 or self.num_classes == 3, "Num Classes should be 2 or 3"
 
