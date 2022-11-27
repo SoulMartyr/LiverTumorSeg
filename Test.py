@@ -1,5 +1,6 @@
 import Config
 from models.HDenseUNet import AmpHDenseUNet
+from models.HDenseUNetV2 import AmpHDenseUNetV2
 from models.UNet3D import AmpUNet3D
 from utils.DataFunc import *
 from utils.Logger import *
@@ -20,7 +21,7 @@ def test(test_loader, model):
                 test_dice = liver_dice(out, seg)
             else:
                 test_dice = tumor_dice(out, seg)
-        print(test_loss,test_dice)
+        print(test_loss, test_dice)
         test_tot_loss.append(test_loss.item())
         test_tot_dice.append(test_dice.item())
     return np.mean(test_tot_loss), np.max(test_tot_dice)
@@ -45,6 +46,8 @@ if __name__ == "__main__":
         model = AmpUNet3D(out_channels=num_classes)
     elif model_name == "hdenseunet":
         model = AmpHDenseUNet(num_slices=test_crop_slices, out_channels=num_classes)
+    elif model_name == "hdenseunetv2":
+        model = AmpHDenseUNetV2(out_channels=num_classes)
     else:
         raise NameError("No model named" + model_name)
 

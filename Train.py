@@ -4,6 +4,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 import Config
 from models.HDenseUNet import AmpHDenseUNet
+from models.HDenseUNetV2 import AmpHDenseUNetV2
 from models.UNet3D import AmpUNet3D
 from utils.DataFunc import *
 from utils.Logger import *
@@ -128,6 +129,9 @@ if __name__ == "__main__":
     elif model_name == "hdenseunet":
         model = AmpHDenseUNet(num_slices=train_crop_slices, out_channels=num_classes)
         log_file = set_logfile(AmpHDenseUNet.__name__)
+    elif model_name == "hdenseunetv2":
+        model = AmpHDenseUNetV2(out_channels=num_classes)
+        log_file = set_logfile(AmpHDenseUNetV2.__name__)
     else:
         raise NameError("No model named" + model_name)
 
