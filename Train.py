@@ -1,5 +1,6 @@
 from torch import optim
 from torch.cuda import amp
+from torch.utils.tensorboard import SummaryWriter
 
 import Config
 from models.HDenseUNet import AmpHDenseUNet
@@ -45,7 +46,7 @@ def save_weight(weight_dir, epoch, iteration, model_state_dict, optim_state_dict
 def train(start_epoch, start_iteration, train_loader, test_loader, model, is_amp, optimizer, grad_scaler,
           valid_epoch, save_epoch, weight_dir, log_iteration, log_file):
     log_msg_head(epoch_num, batch_size, log_file)
-
+    writer = SummaryWriter(log_dir="./logs/{}".format(model.__class__.__name__))
     best_dice = 0.
 
     epoch = start_epoch
@@ -94,9 +95,12 @@ def train(start_epoch, start_iteration, train_loader, test_loader, model, is_amp
                 lr = get_learning_rate(optimizer)
                 log_msg(epoch, iteration, lr, train_accuracy, test_accuracy, is_save, log_file)
 
+                writer.add_scalar(tag="loss/train", scalar_value=train_loss.item(),
+                                  global_step=epoch * len(train_loader) + iteration)
             iteration += 1
 
         epoch += 1
+    writer.close()
     return best_dice
 
 

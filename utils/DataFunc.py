@@ -58,10 +58,42 @@ class TiLSDataSet(Dataset):
         ct_array = sitk.GetArrayFromImage(ct)
         seg_array = sitk.GetArrayFromImage(seg)
 
-        ct_array = np.expand_dims(ct_array, axis=0)
-
         if self.normalize:
             ct_array = normalize_array(ct_array)
+
+        flip_num = np.random.randint(0, 8)
+        if flip_num == 1:
+            ct_array = np.flipud(ct_array)
+            seg_array = np.flipud(seg_array)
+        elif flip_num == 2:
+            ct_array = np.fliplr(ct_array)
+            seg_array = np.fliplr(seg_array)
+        elif flip_num == 3:
+            ct_array = np.rot90(ct_array, k=1, axes=(1, 2))
+            seg_array = np.rot90(seg_array, k=1, axes=(1, 2))
+        elif flip_num == 4:
+            ct_array = np.rot90(ct_array, k=3, axes=(1, 2))
+            seg_array = np.rot90(seg_array, k=3, axes=(1, 2))
+        elif flip_num == 5:
+            ct_array = np.fliplr(ct_array)
+            seg_array = np.fliplr(seg_array)
+            ct_array = np.rot90(ct_array, k=1, axes=(1, 2))
+            seg_array = np.rot90(seg_array, k=1, axes=(1, 2))
+        elif flip_num == 6:
+            ct_array = np.fliplr(ct_array)
+            seg_array = np.fliplr(seg_array)
+            ct_array = np.rot90(ct_array, k=3, axes=(1, 2))
+            seg_array = np.rot90(seg_array, k=3, axes=(1, 2))
+        elif flip_num == 7:
+            ct_array = np.flipud(ct_array)
+            seg_array = np.flipud(seg_array)
+            ct_array = np.fliplr(ct_array)
+            seg_array = np.fliplr(seg_array)
+
+        ct_array = ct_array.copy()
+        seg_array = seg_array.copy()
+
+        ct_array = np.expand_dims(ct_array, axis=0)
 
         assert self.num_classes == 2 or self.num_classes == 3, "Num Classes should be 2 or 3"
 
