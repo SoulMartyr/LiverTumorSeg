@@ -57,20 +57,22 @@ def train(start_epoch, start_iteration, train_loader, test_loader, model, is_amp
             iteration = 0
         model.train()
         is_epoch_saved = False
+        is_epoch_valid = False
         for _, batch in enumerate(train_loader):
             if hasattr(torch.cuda, 'empty_cache'):
                 torch.cuda.empty_cache()
 
             is_save = False
-            if epoch % valid_epoch == 0 and epoch != start_epoch:
+            if not is_epoch_valid and epoch % valid_epoch == 0 and epoch != start_epoch:
                 test_accuracy = test(test_loader, model)
                 model.train()
                 if not is_epoch_saved and epoch % save_epoch == 0:
                     save_weight(weight_dir, epoch, iteration, model.state_dict(), optimizer.state_dict(), is_amp,
                                 grad_scaler.state_dict())
-                    best_dice = test_accuracy[1]
+                    best_dice = np.max(best_dice, test_accuracy[1])
                     is_save = True
                 is_epoch_saved = True
+                is_epoch_valid = True
             else:
                 test_accuracy = [None, None]
 
@@ -148,7 +150,8 @@ if __name__ == "__main__":
     train_dataset = TiLSDataSet(data_path=train_data_path, index_list=train_index,
                                 crop_slices=train_crop_slices, num_classes=num_classes, is_normalize=args.normalize)
     test_dataset = TiLSDataSet(data_path=test_data_path, index_list=test_index,
-                               crop_slices=test_crop_slices, num_classes=num_classes, is_normalize=args.normalize)
+                               crop_slices=test_crop_slices, num_classes=num_classes, is_normalize=args.normalize,
+                               is_flip=False)
 
     train_loader = DataLoader(
         dataset=train_dataset,

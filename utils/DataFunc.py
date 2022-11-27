@@ -40,13 +40,14 @@ def normalize_tensor(tensor):
 
 class TiLSDataSet(Dataset):
     def __init__(self, data_path: str, index_list: list, crop_slices: int = 48, num_classes: int = 2,
-                 is_normalize: bool = False):
+                 is_normalize: bool = False, is_flip: bool = True):
         super(TiLSDataSet, self).__init__()
         self.data_path = data_path
         self.index_list = index_list
         self.crop_slices = crop_slices
         self.num_classes = num_classes
         self.normalize = is_normalize
+        self.flip = is_flip
 
     def __len__(self):
         return len(self.index_list)
@@ -60,35 +61,35 @@ class TiLSDataSet(Dataset):
 
         if self.normalize:
             ct_array = normalize_array(ct_array)
-
-        flip_num = np.random.randint(0, 8)
-        if flip_num == 1:
-            ct_array = np.flipud(ct_array)
-            seg_array = np.flipud(seg_array)
-        elif flip_num == 2:
-            ct_array = np.fliplr(ct_array)
-            seg_array = np.fliplr(seg_array)
-        elif flip_num == 3:
-            ct_array = np.rot90(ct_array, k=1, axes=(1, 2))
-            seg_array = np.rot90(seg_array, k=1, axes=(1, 2))
-        elif flip_num == 4:
-            ct_array = np.rot90(ct_array, k=3, axes=(1, 2))
-            seg_array = np.rot90(seg_array, k=3, axes=(1, 2))
-        elif flip_num == 5:
-            ct_array = np.fliplr(ct_array)
-            seg_array = np.fliplr(seg_array)
-            ct_array = np.rot90(ct_array, k=1, axes=(1, 2))
-            seg_array = np.rot90(seg_array, k=1, axes=(1, 2))
-        elif flip_num == 6:
-            ct_array = np.fliplr(ct_array)
-            seg_array = np.fliplr(seg_array)
-            ct_array = np.rot90(ct_array, k=3, axes=(1, 2))
-            seg_array = np.rot90(seg_array, k=3, axes=(1, 2))
-        elif flip_num == 7:
-            ct_array = np.flipud(ct_array)
-            seg_array = np.flipud(seg_array)
-            ct_array = np.fliplr(ct_array)
-            seg_array = np.fliplr(seg_array)
+        if self.flip:
+            flip_num = np.random.randint(0, 8)
+            if flip_num == 1:
+                ct_array = np.flipud(ct_array)
+                seg_array = np.flipud(seg_array)
+            elif flip_num == 2:
+                ct_array = np.fliplr(ct_array)
+                seg_array = np.fliplr(seg_array)
+            elif flip_num == 3:
+                ct_array = np.rot90(ct_array, k=1, axes=(1, 2))
+                seg_array = np.rot90(seg_array, k=1, axes=(1, 2))
+            elif flip_num == 4:
+                ct_array = np.rot90(ct_array, k=3, axes=(1, 2))
+                seg_array = np.rot90(seg_array, k=3, axes=(1, 2))
+            elif flip_num == 5:
+                ct_array = np.fliplr(ct_array)
+                seg_array = np.fliplr(seg_array)
+                ct_array = np.rot90(ct_array, k=1, axes=(1, 2))
+                seg_array = np.rot90(seg_array, k=1, axes=(1, 2))
+            elif flip_num == 6:
+                ct_array = np.fliplr(ct_array)
+                seg_array = np.fliplr(seg_array)
+                ct_array = np.rot90(ct_array, k=3, axes=(1, 2))
+                seg_array = np.rot90(seg_array, k=3, axes=(1, 2))
+            elif flip_num == 7:
+                ct_array = np.flipud(ct_array)
+                seg_array = np.flipud(seg_array)
+                ct_array = np.fliplr(ct_array)
+                seg_array = np.fliplr(seg_array)
 
         ct_array = ct_array.copy()
         seg_array = seg_array.copy()
