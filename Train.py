@@ -198,6 +198,11 @@ if __name__ == "__main__":
             model = AmpHDenseUNetV2(out_channels=num_classes)
         else:
             model = HDenseUNetV2(out_channels=num_classes)
+    elif model_name == "transbts":
+        if is_amp:
+            model = AmpHDenseUNetV2(out_channels=num_classes)
+        else:
+            model = HDenseUNetV2(out_channels=num_classes)
     else:
         raise NameError("No model named" + model_name)
     log_file = set_logfile(model._get_name())

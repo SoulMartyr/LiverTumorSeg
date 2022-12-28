@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+import numpy as np
 
 
 def tversky_loss(preds, targets, beta=0.7):
@@ -118,7 +119,10 @@ def liver_dice(preds, targets, threshold=0.5):
 
         intersection = (pred * target).sum()
         union = (pred + target).sum()
-        tot_dice += 2 * intersection / (union + epsilon)
+        if intersection == 0 and union == 0:
+            tot_dice += torch.tensor(np.array([1.])).sum().to(preds.device)
+        else:
+            tot_dice += 2 * intersection / (union + epsilon)
 
     return tot_dice / batch_size
 
@@ -142,7 +146,10 @@ def tumor_dice(preds, targets, threshold=0.5):
 
         intersection = (pred * target).sum()
         union = (pred + target).sum()
-        tot_dice += 2 * (intersection + epsilon) / (union + epsilon)
+        if intersection == 0 and union == 0:
+            tot_dice += torch.tensor(np.array([1.])).sum().to(preds.device)
+        else:
+            tot_dice += 2 * intersection / (union + epsilon)
 
     return tot_dice / batch_size
 
