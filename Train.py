@@ -6,6 +6,7 @@ import Config
 from models.HDenseUNet import AmpHDenseUNet, HDenseUNet
 from models.HDenseUNetV2 import AmpHDenseUNetV2, HDenseUNetV2
 from models.UNet3D import AmpUNet3D, UNet3D
+from models.TransBTS import AmpTransBTS, TransBTS
 from utils.DataFunc import *
 from utils.Logger import *
 from utils.LossFunc import *
@@ -70,7 +71,7 @@ def train_amp(start_epoch, start_iteration, train_loader, test_loader, model, op
                 if not is_epoch_saved and epoch % save_epoch == 0:
                     save_weight(weight_dir, epoch, iteration, model.state_dict(), optimizer.state_dict(), is_amp=True,
                                 scaler_state_dict=grad_scaler.state_dict())
-                    best_dice = np.max(best_dice, test_accuracy[1])
+                    best_dice = max(best_dice, test_accuracy[1])
                     is_save = True
                 is_epoch_saved = True
                 is_epoch_valid = True
@@ -132,7 +133,7 @@ def train(start_epoch, start_iteration, train_loader, test_loader, model, optimi
                 model.train()
                 if not is_epoch_saved and epoch % save_epoch == 0:
                     save_weight(weight_dir, epoch, iteration, model.state_dict(), optimizer.state_dict(), is_amp=False)
-                    best_dice = np.max(best_dice, test_accuracy[1])
+                    best_dice = max(best_dice, test_accuracy[1])
                     is_save = True
                 is_epoch_saved = True
                 is_epoch_valid = True
@@ -198,8 +199,13 @@ if __name__ == "__main__":
             model = AmpHDenseUNetV2(out_channels=num_classes)
         else:
             model = HDenseUNetV2(out_channels=num_classes)
+    elif model_name == "transbts":
+        if is_amp:
+            model = AmpTransBTS(out_channels=num_classes)
+        else:
+            model = TransBTS(out_channels=num_classes)
     else:
-        raise NameError("No model named" + model_name)
+        raise NameError("No model named " + model_name)
     log_file = set_logfile(model._get_name())
 
     batch_size = args.batch_size

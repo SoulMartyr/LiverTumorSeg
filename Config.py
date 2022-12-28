@@ -11,7 +11,7 @@ parser.add_argument('--index_path', default="./data/index.csv", help='index file
 parser.add_argument('--gpu', action='store_true', help='whether use gpu')
 parser.add_argument('--amp', action='store_true', help='whether use automatic mixed precision')
 parser.add_argument('--normalize', action='store_true', help='Whether normalize the data to the range -1 to 1')
-parser.add_argument('--model', default="hdenseunetv2", help='option: unet3d hdenseunet hdenseunetv2')
+parser.add_argument('--model', default="transbts", help='option: unet3d hdenseunet hdenseunetv2 transbts')
 parser.add_argument('--num_classes', type=int, default=3, help='2:only segment liver 3:both segment liver and tumor')
 parser.add_argument('--batch_size', type=int, default=1, help='train batch size')
 parser.add_argument('--epoch_num', type=int, default=100, metavar='N', help='number of epochs to train (default: 200)')

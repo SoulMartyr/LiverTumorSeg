@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch.nn.functional as F
 
@@ -96,7 +97,7 @@ def dice_loss(preds, targets):
 
         intersection = (pred * target).sum()
         union = (pred + target).sum()
-        loss += 1 - 2 * (intersection + epsilon) / (union + epsilon)
+        loss += 1 - 2 * intersection / (union + epsilon)
     return loss / batch_size
 
 
@@ -118,7 +119,10 @@ def liver_dice(preds, targets, threshold=0.5):
 
         intersection = (pred * target).sum()
         union = (pred + target).sum()
-        tot_dice += 2 * intersection / (union + epsilon)
+        if intersection == 0 and union == 0:
+            tot_dice += torch.tensor(np.array([1.])).sum().to(preds.device)
+        else:
+            tot_dice += 2 * intersection / (union + epsilon)
 
     return tot_dice / batch_size
 
@@ -142,7 +146,10 @@ def tumor_dice(preds, targets, threshold=0.5):
 
         intersection = (pred * target).sum()
         union = (pred + target).sum()
-        tot_dice += 2 * (intersection + epsilon) / (union + epsilon)
+        if intersection == 0 and union == 0:
+            tot_dice += torch.tensor(np.array([1.])).sum().to(preds.device)
+        else:
+            tot_dice += 2 * intersection / (union + epsilon)
 
     return tot_dice / batch_size
 
@@ -188,3 +195,5 @@ if __name__ == "__main__":
 
     print(pred.shape, gt.shape)
     print(weighted_cross_entropy_loss(pred, gt))
+    a = torch.tensor(np.array([1.])).sum()
+    print(a, a.shape)
