@@ -9,8 +9,8 @@ class HDenseUNet(nn.Module):
     def __init__(self, num_slices: int, out_channels: int = 3):
         super(HDenseUNet, self).__init__()
         self.num_slices = num_slices
-        self.dense_unet2d = DenseUNet2D(3, out_channels)
-        self.dense_unet3d = DenseUNet3D(out_channels + 1, out_channels)
+        self.dense_unet2d = DenseUNet2D(3, out_channels, reduction=0.5)
+        self.dense_unet3d = DenseUNet3D(out_channels + 1, out_channels, reduction=0.5)
         self.conv = nn.Conv3d(64, 64, kernel_size=3, padding="same")
         self.dropout = nn.Dropout(0.3)
         self.bn = nn.BatchNorm3d(64)

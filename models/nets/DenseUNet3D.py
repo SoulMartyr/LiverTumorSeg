@@ -2,13 +2,13 @@ import torch
 import torch.nn as nn
 
 
-class Scale(nn.Module):
+class Scale3D(nn.Module):
     def __init__(self, channels: int, dim: int = 1):
-        super(Scale, self).__init__()
+        super(Scale3D, self).__init__()
         self.channels = channels
         self.dim = dim
-        self.gamma = nn.Parameter(torch.ones(channels), requires_grad=True)
-        self.beta = nn.Parameter(torch.zeros(channels), requires_grad=True)
+        self.gamma = nn.Parameter(torch.ones([1, channels, 1, 1, 1]), requires_grad=True)
+        self.beta = nn.Parameter(torch.zeros([1, channels, 1, 1, 1]), requires_grad=True)
 
     def forward(self, x):
         x_shape = list(x.shape)
@@ -16,22 +16,7 @@ class Scale(nn.Module):
         assert self.channels == x_shape[self.dim], \
             "Channels should be equal to the number of input corresponding dimension "
 
-        gamma = self.gamma
-        beta = self.beta
-
-        for i in range(len(x_shape)):
-            if i < self.dim:
-                gamma = gamma.unsqueeze(0)
-                beta = beta.unsqueeze(0)
-            if i > self.dim:
-                gamma = gamma.unsqueeze(-1)
-                beta = beta.unsqueeze(-1)
-
-        x_shape[self.dim] = 1
-        gamma = gamma.repeat(x_shape)
-        beta = beta.repeat(x_shape)
-
-        out = x * gamma + beta
+        out = x * self.gamma + self.beta
         return out
 
 
@@ -42,7 +27,7 @@ class ConvBlock3D(nn.Module):
 
         self.dropout_rate = dropout_rate
         self.bn1 = nn.BatchNorm3d(in_channels, momentum=1)
-        self.scale1 = Scale(in_channels)
+        self.scale1 = Scale3D(in_channels)
         self.relu1 = nn.ReLU(inplace=True)
         self.conv1 = nn.Conv3d(in_channels, inter_channels, kernel_size=1, bias=False)
 
@@ -50,7 +35,7 @@ class ConvBlock3D(nn.Module):
             self.dropout1 = nn.Dropout(p=dropout_rate)
 
         self.bn2 = nn.BatchNorm3d(inter_channels, momentum=1)
-        self.scale2 = Scale(inter_channels)
+        self.scale2 = Scale3D(inter_channels)
         self.relu2 = nn.ReLU(inplace=True)
         self.conv2 = nn.Conv3d(inter_channels, growth_rate, kernel_size=3, padding=1, bias=False)
 
@@ -102,7 +87,7 @@ class TransitionBlock3D(nn.Module):
         self.dropout_rate = dropout_rate
 
         self.bn = nn.BatchNorm3d(in_channels, momentum=1)
-        self.scale = Scale(in_channels)
+        self.scale = Scale3D(in_channels)
         self.relu = nn.ReLU(inplace=True)
         self.conv = nn.Conv3d(in_channels, int(in_channels * compression), kernel_size=1, bias=False)
 
@@ -136,7 +121,7 @@ class DenseUNet3D(nn.Module):
 
         self.conv1 = nn.Conv3d(in_channels, inter_channels, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn1 = nn.BatchNorm3d(inter_channels)
-        self.scale1 = Scale(inter_channels)
+        self.scale1 = Scale3D(inter_channels)
         self.relu1 = nn.ReLU(inplace=True)
         self.max_pool = nn.MaxPool3d(kernel_size=3, stride=2, padding=1)
 
@@ -151,7 +136,7 @@ class DenseUNet3D(nn.Module):
                 inter_channels = int(inter_channels * compression)
 
         self.bn2 = nn.BatchNorm3d(inter_channels)
-        self.scale2 = Scale(inter_channels)
+        self.scale2 = Scale3D(inter_channels)
         self.relu2 = nn.ReLU(inplace=True)
 
         self.up_stage1 = nn.Sequential(nn.Upsample(scale_factor=(1, 2, 2)),

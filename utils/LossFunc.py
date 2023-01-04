@@ -46,7 +46,7 @@ def weighted_cross_entropy_loss(preds, targets):
 
     assert channels == 2 or channels == 3, "channel should be 2 or 3"
 
-    loss = 0.
+    loss = torch.FloatTensor([0]).sum().to(preds.device)
 
     if channels == 2:
         ratio = [0.78, 9.22]
