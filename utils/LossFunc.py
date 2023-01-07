@@ -1,5 +1,5 @@
 import torch
-from torch.nn.functional import softmax
+import torch.nn.functional as F
 
 
 def tversky_loss(preds, targets, beta=0.7):
@@ -19,7 +19,7 @@ def tversky_loss(preds, targets, beta=0.7):
     else:
         ratio = [0.78, 0.65, 8.57]
 
-    preds = softmax(preds, dim=1)
+    preds = F.softmax(preds, dim=1)
     preds = torch.clamp(preds, min=1e-7, max=1).to(torch.float32)
 
     for i in range(batch_size):
@@ -46,32 +46,38 @@ def weighted_cross_entropy_loss(preds, targets):
 
     assert channels == 2 or channels == 3, "channel should be 2 or 3"
 
-    loss = torch.FloatTensor([0]).sum().to(preds.device)
-
+    # loss = torch.FloatTensor([0]).sum().to(preds.device)
+    #
+    # if channels == 2:
+    #     ratio = [0.78, 9.22]
+    # else:
+    #     ratio = [0.78, 0.65, 8.57]
+    #
+    # preds = F.softmax(preds, dim=1)
+    # print(preds)
+    # preds = torch.clamp(preds, min=1e-7, max=1).to(torch.float32)
+    #
+    # for i in range(batch_size):
+    #     for j in range(channels):
+    #         pred = preds[i, j].flatten()
+    #         target = targets[i, j].flatten()
+    #
+    #         pred = pred[target == 1]
+    #         if len(pred) == 0:
+    #             tmp_loss = torch.FloatTensor([0]).sum().to(pred.device)
+    #         else:
+    #             tmp_loss = - torch.log(pred).mean()
+    #
+    #         loss += ratio[j] * tmp_loss
+    #
+    # loss = loss / (batch_size * channels)
+    # return loss
     if channels == 2:
-        ratio = [0.78, 9.22]
+        return F.cross_entropy(input=preds, target=targets, weight=torch.tensor((0.78, 9.22), device=preds.device),
+                               reduction='mean')
     else:
-        ratio = [0.78, 0.65, 8.57]
-
-    preds = softmax(preds, dim=1)
-    preds = torch.clamp(preds, min=1e-7, max=1).to(torch.float32)
-
-    for i in range(batch_size):
-        for j in range(channels):
-            pred = preds[i, j].flatten()
-            target = targets[i, j].flatten()
-
-            pred = pred[target == 1]
-            if len(pred) == 0:
-                tmp_loss = torch.FloatTensor([0]).sum().to(pred.device)
-            else:
-                tmp_loss = - torch.log(pred).mean()
-
-            loss += ratio[j] * tmp_loss
-
-    loss = loss / (batch_size * channels)
-
-    return loss
+        return F.cross_entropy(input=preds, target=targets,
+                               weight=torch.tensor((0.78, 0.65, 8.57), device=preds.device), reduction='mean')
 
 
 def dice_loss(preds, targets):
@@ -81,7 +87,7 @@ def dice_loss(preds, targets):
     loss = 0.
     epsilon = 1e-5
 
-    preds = softmax(preds, dim=1)
+    preds = F.softmax(preds, dim=1)
     preds = torch.clamp(preds, min=1e-7, max=1).to(torch.float32)
 
     for i in range(batch_size):
@@ -101,19 +107,18 @@ def liver_dice(preds, targets, threshold=0.5):
     tot_dice = 0.
     epsilon = 1e-5
 
-    preds = softmax(preds, dim=1)
+    preds = F.softmax(preds, dim=1)
     preds = torch.clamp(preds, min=1e-7, max=1).to(torch.float32)
 
     preds[preds >= threshold] = 1
     preds[preds < threshold] = 0
-
     for i in range(batch_size):
         pred = preds[i, 1].flatten()
         target = targets[i, 1].flatten()
 
         intersection = (pred * target).sum()
         union = (pred + target).sum()
-        tot_dice += 2 * (intersection + epsilon) / (union + epsilon)
+        tot_dice += 2 * intersection / (union + epsilon)
 
     return tot_dice / batch_size
 
@@ -125,7 +130,7 @@ def tumor_dice(preds, targets, threshold=0.5):
     tot_dice = 0.
     epsilon = 1e-5
 
-    preds = softmax(preds, dim=1)
+    preds = F.softmax(preds, dim=1)
     preds = torch.clamp(preds, min=1e-7, max=1).to(torch.float32)
 
     preds[preds >= threshold] = 1
